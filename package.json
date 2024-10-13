@@ -7,13 +7,15 @@
   "private": true,
   "dependencies": {
     "@remotion/cli": "4.0.221",
+    "@remotion/tailwind": "4.0.221",
+    "chroma-js": "^3.1.2",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "remotion": "4.0.221",
-    "@remotion/tailwind": "4.0.221"
+    "remotion": "4.0.221"
   },
   "devDependencies": {
     "@remotion/eslint-config": "4.0.221",
+    "@types/chroma-js": "^2.4.4",
     "@types/react": "18.3.1",
     "@types/web": "0.0.166",
     "eslint": "8.56.0",
