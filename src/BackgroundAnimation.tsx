@@ -1,62 +1,57 @@
-import React from 'react';
-import { interpolate, useCurrentFrame, useVideoConfig, spring } from 'remotion';
-import chroma from 'chroma-js';
 
-// Function to generate shades of the input color
-const generateShades = (color: string, numberOfShades: number) => {
-  return chroma.scale([chroma(color).darken(2), chroma(color).brighten(2)]).colors(numberOfShades);
-};
+import React, { useEffect, useRef } from 'react'
 
-export const BackgroundAnimation: React.FC<{ baseColor: string }> = ({ baseColor }) => {
-  const frame = useCurrentFrame();
-  const { durationInFrames, fps } = useVideoConfig();
+export default function Component() {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  // Generate 5 shades of the input color (e.g., Pink)
-  const shades = generateShades(baseColor, 5);
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
 
-  // Transition interval between shades
-  const transitionDuration = Math.floor(durationInFrames / shades.length);
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
 
-  // Current shade index based on the frame
-  const currentIndex = Math.floor(frame / transitionDuration) % shades.length;
-  const nextIndex = (currentIndex + 1) % shades.length;
+    let animationFrameId: number
 
-  // Interpolating between two shades of the same color
-  const currentShade = shades[currentIndex];
-  const nextShade = shades[nextIndex];
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
 
-  const backgroundColor = chroma.mix(currentShade, nextShade, interpolate(
-    frame % transitionDuration,
-    [0, transitionDuration],
-    [0, 1]
-  )).hex();
+    const createGradient = (t: number) => {
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
+      
+      // Use a softer color palette
+      const hue1 = (t * 10) % 360
+      const hue2 = (hue1 + 60) % 360
+      
+      gradient.addColorStop(0, `hsl(${hue1}, 70%, 80%)`)
+      gradient.addColorStop(1, `hsl(${hue2}, 70%, 80%)`)
+      
+      return gradient
+    }
 
-  // Smooth transition
-  const opacity = spring({
-    frame: frame % transitionDuration,
-    fps,
-    config: {
-      damping: 20,
-    },
-  });
+    const animate = (t: number) => {
+      const gradient = createGradient(t * 0.001)
+      ctx.fillStyle = gradient
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      
+      animationFrameId = requestAnimationFrame(animate)
+    }
+
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+    animationFrameId = requestAnimationFrame(animate)
+
+    return () => {
+      window.removeEventListener('resize', resizeCanvas)
+      cancelAnimationFrame(animationFrameId)
+    }
+  }, [])
 
   return (
-    <div
-      style={{
-        flex: 1,
-        background: backgroundColor,
-        opacity: 0.9 + opacity * 0.1, // Smooth opacity change
-        transition: 'background 2s ease-in-out',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        fontSize: 80,
-        color: 'white',
-        height: '100vh',
-      }}
-    >
-      Gradient Shades of {baseColor}
+    <div className="fixed inset-0 -z-10">
+      <canvas ref={canvasRef} className="w-full h-full" />
     </div>
-  );
-};
-
+  )
+}
