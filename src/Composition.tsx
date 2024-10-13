@@ -1,8 +1,8 @@
 import { AbsoluteFill } from "remotion";
-import { BackgroundAnimation } from "./BackgroundAnimation";
+import Background from "./Background";
 
 export const MyComposition = () => {
   return <AbsoluteFill>
-    <BackgroundAnimation baseColor="blue" />
+    <Background />
   </AbsoluteFill>
 };
